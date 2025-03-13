@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>星儿专注力训练</title>
+    <style>
+        :root {
+            --primary: #D2B4DE;
+            --secondary: #ADD8E6;
+            --bg: #E0FFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: '微软雅黑';
+            background: var(--bg);
+            overflow-x: hidden;
+            padding-top: 80px;
+            position: relative;
+            display: flex;
+        }
+
+        /* 渐变背景效果 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #D2B4DE, #FFC0CB, #ADD8E6, #D2B4DE);
+            background-size: 400% 400%;
+            animation: gradientBackground 15s ease infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            background: linear-gradient(45deg, #D2B4DE, #FFC0CB, #ADD8E6, #D2B4DE);
+            background-size: 400% 400%;
+            animation: gradientBackground 15s ease infinite;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            background: linear-gradient(45deg, #adcdec, #dae2e5, #87cefa, #1e90ff);
+            background-size: 400% 400%;
+            animation: logoGradient 8s ease infinite;
+        }
+
+        .logo:hover {
+            transform: scale(1.1);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        /* 游戏列表样式 */
+        .game-list {
+            width: 250px;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            margin: 1rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            height: calc(100vh - 100px);
+            position: fixed;
+            left: 0;
+        }
+
+        .game-list-item {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.5);
+            color: #333;
+            text-align: center;
+        }
+
+        .game-list-item:hover,
+        .game-list-item.active {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            transform: translateX(10px);
+        }
+
+        /* 游戏区域样式 */
+        .game-container {
+            display: none;
+            padding: 2rem;
+            margin-left: 280px;
+            flex-grow: 1;
+        }
+
+        .game-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 2rem;
+            border-radius: 20px;
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* 游戏网格样式 */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .color-card {
+            width: 150px;
+            height: 150px;
+            border-radius: 20px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .color-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+        }
+
+        /* 形状游戏样式 */
+        .shape-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.5rem;
+            padding: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .shape-card {
+            width: 120px;
+            height: 120px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .shape-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .shape-card.matched {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+        }
+
+        /* 动画效果 */
+        @keyframes gradientBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes logoGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 计分板样式 */
+        .score-board {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(5px);
+            padding: 1.5rem 3rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        /* 按钮样式 */
+        .reset-btn, .difficulty-btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .reset-btn:hover, .difficulty-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            background: linear-gradient(45deg, var(--secondary), var(--primary));
+        }
+
+        .reset-btn:active, .difficulty-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .difficulty-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(45deg, #9b59b6, #3498db);
+            transform: scale(1.05);
+        }
+
+        .timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 1rem 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo-container">
+            <div class="logo" style="background: linear-gradient(45deg, #adcdec, #dae2e5, #87cefa, #1e90ff); background-size: 400% 400%; animation: logoGradient 8s ease infinite;"></div>
+            <h1 style="color: white;">星儿专注力训练</h1>
+        </div>
+        <div class="nav-links">
+            <a href="main.html" class="nav-link">首页</a>
+            <a href="game.html" class="nav-link">星儿游戏</a>
+            <a href="Community_organization_structure.html" class="nav-link">社团架构</a>
+            <a href="Sponsored_projects.html" class="nav-link">赞助项目</a>
+            <a href="JourneyOfLove.html" class="nav-link">爱之旅康复医院</a>
+        </div>
+    </nav>
+
+    <div class="game-list">
+        <div class="game-list-item active" onclick="showGame('color')">色彩记忆</div>
+        <div class="game-list-item" onclick="showGame('shape')">形状配对</div>
+        <div class="game-list-item">敬请期待</div>
+    </div>
+
+    <div class="game-container" id="colorGame" style="display: block;">
+        <header class="game-header">
+            <h1>色彩记忆大挑战 🌟</h1>
+            <p>找到相同颜色的方块，锻炼观察力和记忆力</p>
+        </header>
+
+        <div class="score-board">
+            <div>得分：<span id="score">0</span></div>
+        </div>
+
+        <button class="reset-btn" onclick="resetColorGame()">重新开始</button>
+        <div class="game-grid" id="gameGrid"></div>
+    </div>
+
+    <div class="game-container" id="shapeGame">
+        <header class="game-header">
+            <h1>形状配对游戏 🎯</h1>
+            <p>匹配相同的形状，提升注意力</p>
+        </header>
+
+        <div class="score-board">
+            <div>匹配对数：<span id="shapeScore">0</span></div>
+            <div>最佳记录：<span id="bestScore">0</span></div>
+        </div>
+
+        <button class="reset-btn" onclick="initShapeGame()">重新开始</button>
+        <div class="shape-grid" id="shapeGrid"></div>
+    </div>
+
+    <div class="difficulty-container">
+        <button class="difficulty-btn active" onclick="setDifficulty('easy')">简单</button>
+        <button class="difficulty-btn" onclick="setDifficulty('medium')">中等</button>
+        <button class="difficulty-btn" onclick="setDifficulty('hard')">困难</button>
+    </div>
+    <div class="timer" id="timer">时间: 0s</div>
+
+    <script>
+        const colors = ['#F4A460', '#DEB887', '#CD853F', '#D2B48C', 
+                       '#BC8F8F', '#A0522D', '#8B4513', '#DAA520'];
+        let selectedCards = [];
+        let score = 0;
+        let gameActive = true;
+        let difficulty = 'easy';
+        let timer;
+        let seconds = 0;
+
+        function showGame(gameType) {
+            document.querySelectorAll('.game-container').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.game-list-item').forEach(item => item.classList.remove('active'));
+            document.getElementById(`${gameType}Game`).style.display = 'block';
+            event.target.classList.add('active');
+            
+            if(gameType === 'shape' && !window.shapeGameInit) initShapeGame();
+        }
+
+        function initShapeGame() {
+            window.shapeGameInit = true;
+            const shapes = ['●', '■', '▲', '★', '♥', '♦', '♠', '♣', '◆', '▼'];
+            const pairs = difficulty === 'easy' ? 6 : difficulty === 'medium' ? 8 : 10;
+            const gameShapes = shapes.slice(0, pairs);
+            const shapePairs = [...gameShapes, ...gameShapes];
+            const shuffledShapes = shapePairs.sort(() => Math.random() - 0.5);
+            
+            const shapeGrid = document.getElementById('shapeGrid');
+            shapeGrid.innerHTML = '';
+            shapeGrid.style.gridTemplateColumns = `repeat(${Math.ceil(Math.sqrt(shapePairs.length))}, 1fr)`;
+            
+            shuffledShapes.forEach((shape, index) => {
+                const card = document.createElement('div');
+                card.className = 'shape-card';
+                card.dataset.shape = shape;
+                card.dataset.index = index;
+                card.onclick = () => handleShapeClick(card);
+                shapeGrid.appendChild(card);
+            });
+            startTimer();
+
+            // 在困难模式下设置时间限制
+            if (difficulty === 'hard') {
+                setTimeout(() => {
+                    if (gameActive && score < pairs) {
+                        stopTimer();
+                        alert('时间到！游戏结束');
+                        gameActive = false;
+                    }
+                }, 45000); // 45秒时间限制
+            }
+        }
+
+        function handleShapeClick(card) {
+            if(!gameActive || selectedCards.length >= 2 || selectedCards.includes(card)) return;
+            
+            card.textContent = card.dataset.shape;
+            selectedCards.push(card);
+            
+            if(selectedCards.length === 2) {
+                setTimeout(() => {
+                    if(selectedCards[0].dataset.shape === selectedCards[1].dataset.shape) {
+                        selectedCards.forEach(card => card.classList.add('matched'));
+                        score++;
+                        document.getElementById('shapeScore').textContent = score;
+                        selectedCards = [];
+                        
+                        if(score === (difficulty === 'easy' ? 6 : difficulty === 'medium' ? 8 : 10)) {
+                            stopTimer();
+                            const bestScore = localStorage.getItem('bestScore') || Infinity;
+                            if(seconds < bestScore) {
+                                localStorage.setItem('bestScore', seconds);
+                                document.getElementById('bestScore').textContent = seconds;
+                            }
+                            alert(`恭喜完成！用时 ${seconds} 秒`);
+                            gameActive = false;
+                        }
+                    } else {
+                        selectedCards.forEach(card => {
+                            card.textContent = '';
+                        });
+                        selectedCards = [];
+                    }
+                }, 1000);
+            }
+        }
+
+        function setDifficulty(level) {
+            difficulty = level;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.textContent.toLowerCase().includes(level)) {
+                    btn.classList.add('active');
+                }
+            });
+            resetColorGame();
+            if(window.shapeGameInit) initShapeGame();
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            seconds = 0;
+            timer = setInterval(() => {
+                seconds++;
+                document.getElementById('timer').textContent = `时间: ${seconds}s`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timer);
+        }
+
+        function resetColorGame() {
+            gameActive = true;
+            score = 0;
+            document.getElementById('score').textContent = score;
+            selectedCards = [];
+            startTimer();
+            
+            const pairs = difficulty === 'easy' ? 6 : difficulty === 'medium' ? 8 : 12; // 增加困难模式的配对数量
+            const gameColors = colors.slice(0, pairs);
+            const colorPairs = [...gameColors, ...gameColors];
+            const shuffledColors = colorPairs.sort(() => Math.random() - 0.5);
+            
+            const gameGrid = document.getElementById('gameGrid');
+            gameGrid.innerHTML = '';
+            gameGrid.style.gridTemplateColumns = `repeat(${Math.ceil(Math.sqrt(colorPairs.length))}, 1fr)`;
+            
+            shuffledColors.forEach((color, index) => {
+                const card = document.createElement('div');
+                card.className = 'color-card';
+                card.style.background = '#fff';
+                card.dataset.color = color;
+                card.dataset.index = index;
+                card.onclick = () => handleCardClick(card);
+                gameGrid.appendChild(card);
+            });
+        
+            // 在困难模式下设置时间限制
+            if (difficulty === 'hard') {
+                setTimeout(() => {
+                    if (gameActive && score < pairs) {
+                        stopTimer();
+                        alert('时间到！游戏结束');
+                        gameActive = false;
+                    }
+                }, 30000); // 减少困难模式的时间限制到30秒
+            }
+        }
+
+        function handleCardClick(card) {
+            if(!gameActive || selectedCards.length >= 2 || selectedCards.includes(card)) return;
+            
+            card.style.background = card.dataset.color;
+            card.style.transform = 'rotateY(180deg)';
+            selectedCards.push(card);
+            
+            if(selectedCards.length === 2) {
+                setTimeout(() => {
+                    if(selectedCards[0].dataset.color === selectedCards[1].dataset.color) {
+                        score++;
+                        document.getElementById('score').textContent = score;
+                        selectedCards = [];
+                        
+                        if(score === (difficulty === 'easy' ? 6 : difficulty === 'medium' ? 8 : 10)) {
+                            stopTimer();
+                            alert(`恭喜完成！用时 ${seconds} 秒`);
+                            gameActive = false;
+                        }
+                    } else {
+                        selectedCards.forEach(card => {
+                            card.style.background = '#fff';
+                            card.style.transform = 'rotateY(0deg)';
+                        });
+                        selectedCards = [];
+                    }
+                }, 1000);
+            }
+        }
+
+        // 初始化游戏
+        resetColorGame();
+        // 加载最佳记录
+        document.getElementById('bestScore').textContent = localStorage.getItem('bestScore') || 0;
+    </script>
+</body>
+</html>
